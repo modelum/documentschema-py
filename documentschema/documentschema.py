@@ -115,17 +115,17 @@ class Reference(Property):
 class Aggregate(Property):
 
     isMany = EAttribute(eType=EBoolean, unique=True, derived=False, changeable=True)
-    aggregates = EReference(ordered=True, unique=True, containment=True, derived=False)
+    properties = EReference(ordered=True, unique=True, containment=True, derived=False)
 
-    def __init__(self, *, aggregates=None, isMany=None, **kwargs):
+    def __init__(self, *, properties=None, isMany=None, **kwargs):
 
         super().__init__(**kwargs)
 
         if isMany is not None:
             self.isMany = isMany
 
-        if aggregates is not None:
-            self.aggregates = aggregates
+        if properties is not None:
+            self.properties = properties
 
 
 class PrimitiveType(Type):

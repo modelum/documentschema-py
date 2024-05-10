@@ -20,7 +20,7 @@ EntityType.properties.eType = Property
 Attribute.type.eType = Type
 Reference.target.eType = EntityType
 Reference.type.eType = Type
-Aggregate.aggregates.eType = Property
+Aggregate.properties.eType = Property
 Array.type.eType = PrimitiveType
 
 otherClassifiers = [DataType]
