@@ -15,48 +15,18 @@ getEClassifier = partial(Ecore.getEClassifier, searchspace=eClassifiers)
 DataType = EEnum('DataType', literals=['BOOLEAN', 'INTEGER', 'DOUBLE', 'STRING'])
 
 
-class DocumentSchema(EObject, metaclass=MetaEClass):
+@abstract
+class Type(EObject, metaclass=MetaEClass):
 
-    name = EAttribute(eType=EString, unique=True, derived=False, changeable=True)
-    entities = EReference(ordered=True, unique=True, containment=True, derived=False, upper=-1)
-    types = EReference(ordered=True, unique=True, containment=True, derived=False, upper=-1)
-
-    def __init__(self, *, name=None, entities=None, types=None):
+    def __init__(self):
         # if kwargs:
         #    raise AttributeError('unexpected arguments: {}'.format(kwargs))
 
         super().__init__()
-
-        if name is not None:
-            self.name = name
-
-        if entities:
-            self.entities.extend(entities)
-
-        if types:
-            self.types.extend(types)
-
-
-class EntityType(EObject, metaclass=MetaEClass):
-
-    name = EAttribute(eType=EString, unique=True, derived=False, changeable=True)
-    properties = EReference(ordered=True, unique=True, containment=True, derived=False, upper=-1)
-
-    def __init__(self, *, name=None, properties=None):
-        # if kwargs:
-        #    raise AttributeError('unexpected arguments: {}'.format(kwargs))
-
-        super().__init__()
-
-        if name is not None:
-            self.name = name
-
-        if properties:
-            self.properties.extend(properties)
 
 
 @abstract
-class Property(EObject, metaclass=MetaEClass):
+class NamedElement(EObject, metaclass=MetaEClass):
 
     name = EAttribute(eType=EString, unique=True, derived=False, changeable=True)
 
@@ -71,61 +41,57 @@ class Property(EObject, metaclass=MetaEClass):
 
 
 @abstract
-class Type(EObject, metaclass=MetaEClass):
+class Propertied(EObject, metaclass=MetaEClass):
 
-    def __init__(self):
+    properties = EReference(ordered=True, unique=True, containment=True, derived=False, upper=-1)
+
+    def __init__(self, *, properties=None):
         # if kwargs:
         #    raise AttributeError('unexpected arguments: {}'.format(kwargs))
 
         super().__init__()
 
-
-class Attribute(Property):
-
-    isKey = EAttribute(eType=EBoolean, unique=True, derived=False, changeable=True)
-    type = EReference(ordered=True, unique=True, containment=False, derived=False)
-
-    def __init__(self, *, isKey=None, type=None, **kwargs):
-
-        super().__init__(**kwargs)
-
-        if isKey is not None:
-            self.isKey = isKey
-
-        if type is not None:
-            self.type = type
+        if properties:
+            self.properties.extend(properties)
 
 
-class Reference(Property):
+@abstract
+class Bounded(EObject, metaclass=MetaEClass):
 
-    target = EReference(ordered=True, unique=True, containment=False, derived=False)
-    type = EReference(ordered=True, unique=True, containment=False, derived=False)
+    upperBound = EAttribute(eType=EInt, unique=True, derived=False, changeable=True)
+    lowerBound = EAttribute(eType=EInt, unique=True, derived=False, changeable=True)
 
-    def __init__(self, *, target=None, type=None, **kwargs):
+    def __init__(self, *, upperBound=None, lowerBound=None):
+        # if kwargs:
+        #    raise AttributeError('unexpected arguments: {}'.format(kwargs))
 
-        super().__init__(**kwargs)
+        super().__init__()
 
-        if target is not None:
-            self.target = target
+        if upperBound is not None:
+            self.upperBound = upperBound
 
-        if type is not None:
-            self.type = type
+        if lowerBound is not None:
+            self.lowerBound = lowerBound
 
 
-class Aggregate(Property):
+class DocumentSchema(NamedElement):
 
-    isMany = EAttribute(eType=EBoolean, unique=True, derived=False, changeable=True)
-    properties = EReference(ordered=True, unique=True, containment=True, derived=False)
+    entities = EReference(ordered=True, unique=True, containment=True, derived=False, upper=-1)
 
-    def __init__(self, *, properties=None, isMany=None, **kwargs):
+    def __init__(self, *, entities=None, **kwargs):
 
         super().__init__(**kwargs)
 
-        if isMany is not None:
-            self.isMany = isMany
+        if entities:
+            self.entities.extend(entities)
 
-        if properties is not None:
-            self.properties = properties
+
+@abstract
+class Property(NamedElement):
+
+    def __init__(self, **kwargs):
+
+        super().__init__(**kwargs)
 
 
 class PrimitiveType(Type):
@@ -140,9 +106,16 @@ class PrimitiveType(Type):
             self.datatype = datatype
 
 
-class Array(Type):
+class EntityType(NamedElement, Propertied):
 
-    type = EReference(ordered=True, unique=True, containment=False, derived=False)
+    def __init__(self, **kwargs):
+
+        super().__init__(**kwargs)
+
+
+class Attribute(Property, Bounded):
+
+    type = EReference(ordered=True, unique=True, containment=True, derived=False)
 
     def __init__(self, *, type=None, **kwargs):
 
@@ -150,3 +123,26 @@ class Array(Type):
 
         if type is not None:
             self.type = type
+
+
+class Reference(Property, Bounded):
+
+    target = EReference(ordered=True, unique=True, containment=False, derived=False)
+    type = EReference(ordered=True, unique=True, containment=True, derived=False)
+
+    def __init__(self, *, target=None, type=None, **kwargs):
+
+        super().__init__(**kwargs)
+
+        if target is not None:
+            self.target = target
+
+        if type is not None:
+            self.type = type
+
+
+class Aggregate(Property, Propertied, Bounded):
+
+    def __init__(self, **kwargs):
+
+        super().__init__(**kwargs)

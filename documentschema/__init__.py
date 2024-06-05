@@ -1,13 +1,13 @@
 
 from .documentschema import getEClassifier, eClassifiers
 from .documentschema import name, nsURI, nsPrefix, eClass
-from .documentschema import DocumentSchema, EntityType, Property, Attribute, Reference, Aggregate, Type, PrimitiveType, Array, DataType
+from .documentschema import DocumentSchema, EntityType, Property, Attribute, Reference, Aggregate, Type, PrimitiveType, DataType, NamedElement, Propertied, Bounded
 
 
 from . import documentschema
 
-__all__ = ['DocumentSchema', 'EntityType', 'Property', 'Attribute',
-           'Reference', 'Aggregate', 'Type', 'PrimitiveType', 'Array', 'DataType']
+__all__ = ['DocumentSchema', 'EntityType', 'Property', 'Attribute', 'Reference',
+           'Aggregate', 'Type', 'PrimitiveType', 'DataType', 'NamedElement', 'Propertied', 'Bounded']
 
 eSubpackages = []
 eSuperPackage = None
@@ -15,13 +15,10 @@ documentschema.eSubpackages = eSubpackages
 documentschema.eSuperPackage = eSuperPackage
 
 DocumentSchema.entities.eType = EntityType
-DocumentSchema.types.eType = Type
-EntityType.properties.eType = Property
 Attribute.type.eType = Type
 Reference.target.eType = EntityType
 Reference.type.eType = Type
-Aggregate.properties.eType = Property
-Array.type.eType = PrimitiveType
+Propertied.properties.eType = Property
 
 otherClassifiers = [DataType]
 
